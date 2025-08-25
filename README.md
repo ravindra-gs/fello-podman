@@ -1,238 +1,173 @@
 # Fello Project - Podman Setup
 
-This directory contains a complete Podman-based replacement for the Docker Compose setup, designed specifically for Fedora with SELinux enabled.
+Complete containerized environment for Fello applications using Podman on Fedora with SELinux.
 
-## Architecture
+## Quick Setup
 
-The setup uses a **2-pod architecture**:
-
-### Pod 1: Web Services (`fello-web-pod`)
-
-- **Nginx** - Web server with virtual hosts
-- **PHP-FPM 8.2** - PHP processor using php:8.2-fpm-bullseye
-- **Port**: 80 (HTTP)
-
-### Pod 2: Database (`fello-db-pod`)  
-
-- **MySQL 8.0.30** - Database server
-- **PHPMyAdmin** - Database administration interface
-- **Ports**: 3306 (MySQL), 9080 (PHPMyAdmin)
-
-## Supported Applications
-
-The setup provides nginx virtual hosts for:
-
-- **FC Inventory API** - `http://fc-inventory-api.localhost`
-- **FC Inventory** - `http://fc-inventory.localhost`
-- **Fello IMS** - `http://fello-ims.localhost`
-- **Fello New** - `http://fello-new.localhost`
-
-## Prerequisites
-
-1. **Podman** installed on Fedora
-2. **SELinux** enabled (uses `:Z` volume flags)
-3. **Root or rootless** Podman configuration
-
-## Quick Start
-
-### 1. Initial Setup
-
+### 1. Start Services
 ```bash
-# Navigate to the podman-setup directory
 cd /path/to/Fello/podman-setup
-
-# Start all services (first time)
 ./start-pods.sh
 ```
 
-### 2. Configure /etc/hosts
-
-Add these entries to `/etc/hosts`:
-
+### 2. Configure Host Resolution
 ```bash
 echo "127.0.0.1 fc-inventory-api.localhost" | sudo tee -a /etc/hosts
-echo "127.0.0.1 fc-inventory.localhost" | sudo tee -a /etc/hosts  
+echo "127.0.0.1 fc-inventory.localhost" | sudo tee -a /etc/hosts
 echo "127.0.0.1 fello-ims.localhost" | sudo tee -a /etc/hosts
 echo "127.0.0.1 fello-new.localhost" | sudo tee -a /etc/hosts
 ```
 
-### 3. Install PHP Dependencies
-
+### 3. Install Dependencies
 ```bash
-# Install Composer dependencies for all projects
 ./composer-install.sh
 ```
 
-## Management Scripts
+## Application Access
 
-### Core Scripts
+- **FC Inventory API**: http://fc-inventory-api.localhost:8080
+- **FC Inventory**: http://fc-inventory.localhost:8080  
+- **Fello IMS**: http://fello-ims.localhost:8080
+- **Fello New**: http://fello-new.localhost:8080
+- **phpMyAdmin**: http://localhost:9080
 
-- **`start-pods.sh`** - Full setup (creates pods, builds images, starts containers)
-- **`stop-pods.sh`** - Stop and remove all pods
-- **`status-pods.sh`** - Show status of pods, containers, and URLs
+## Environment Configuration
 
-### Quick Scripts  
+### Application .env Files
 
-- **`simple-start.sh`** - Quick start existing pods (no rebuild)
-- **`simple-stop.sh`** - Quick stop pods (preserve for restart)
+Update each Laravel application's `.env` file:
 
-### Utility Scripts
+#### Database Configuration (All Apps)
+```env
+DB_CONNECTION=mysql
+DB_HOST=fello-mysql8
+DB_PORT=3306
+DB_DATABASE=your_database_name
+DB_USERNAME=root
+DB_PASSWORD=ravindra
+```
 
-- **`composer-install.sh`** - Install PHP dependencies in all projects
+#### Server-to-Server API Calls
+For applications calling fc-inventory-api internally:
 
-## Configuration
+**fello-new/.env**:
+```env
+IMS_URL=http://fello-nginx:8081/
+```
 
-### Environment Variables (`.env`)
+**fello-ims/.env**:
+```env
+FC_API_URL=http://fello-nginx:8081/
+```
 
-```bash
+### System .env File (podman-setup/.env)
+```env
 MYSQL_ROOT_PASSWORD=ravindra
 MYSQL_PORT=3306
 PMA_PORT=9080
 FELLO_NETWORK=fello-network
-NGINX_PORT=80
+NGINX_PORT=8080
+
+# Project paths - adjust as needed
+FELLO_IMS_PATH=../fello-ims
+FELLO_NEW_PATH=../fello-new
+FC_INVENTORY_API_PATH=../fc-inventory-api
+FC_INVENTORY_PATH=../fc-inventory
+MYSQL_DATA_PATH=volumes/mysql
+MYSQL_FILES_PATH=volumes/mysql-files
+LOGS_PATH=volumes/logs
 ```
 
-### MySQL Configuration
+## Permission Fixes
 
-- **Custom config**: `config/mysql/my.cnf`
-- **Data persistence**: `volumes/mysql/`
-- **Log location**: `volumes/logs/mysql/`
+### Laravel Storage Permissions
+If you encounter Laravel log/session permission errors:
 
-### Nginx Configuration  
+```bash
+# Fix ownership (run as root)
+sudo find /run/media/Data/GS/Projects/Fello/fello-ims/storage -user root -exec chown ravindra-gs:ravindra-gs {} \;
+sudo find /run/media/Data/GS/Projects/Fello/fello-new/storage -user root -exec chown ravindra-gs:ravindra-gs {} \;
+sudo find /run/media/Data/GS/Projects/Fello/fc-inventory-api/storage -user root -exec chown ravindra-gs:ravindra-gs {} \;
 
-- **Main config**: `config/nginx/nginx.conf`
-- **Virtual hosts**: `config/nginx/conf.d/*.conf`
-- **Log location**: `volumes/logs/nginx/`
-
-### PHP-FPM Configuration
-
-- **Custom config**: `config/php-fpm/php-fpm.conf`
-- **Dockerfile**: `config/php-fpm/Dockerfile`
-- **Log location**: `volumes/logs/php-fpm/`
-
-## SELinux Compatibility
-
-All volume mounts use the `:Z` flag for SELinux compatibility:
-
-- Automatically relabels mounted volumes
-- Works with enforcing SELinux policies
-- No manual SELinux configuration required
-
-## Data Persistence
-
-Data is stored in the `volumes/` directory:
-
+# Set permissions
+chmod -R 777 /run/media/Data/GS/Projects/Fello/fello-ims/storage
+chmod -R 777 /run/media/Data/GS/Projects/Fello/fello-new/storage
+chmod -R 777 /run/media/Data/GS/Projects/Fello/fc-inventory-api/storage
 ```
-volumes/
-├── mysql/          # MySQL data files
-└── logs/           # Application logs
-    ├── mysql/      
-    ├── nginx/      
-    └── php-fpm/    
+
+### Automated Fix
+```bash
+./fix-permissions.sh  # Stops containers, fixes permissions, restarts
+```
+
+## Management Commands
+
+### Daily Operations
+```bash
+./start-pods.sh     # Full start (rebuilds if needed)
+./stop-pods.sh      # Stop all services
+./status-pods.sh    # Check status
+```
+
+### Quick Start/Stop (No Rebuild)
+```bash
+./simple-start.sh   # Quick start existing containers
+./simple-stop.sh    # Quick stop (preserves containers)
+```
+
+## Database Access
+
+### phpMyAdmin
+- URL: http://localhost:9080
+- Username: `root`
+- Password: `ravindra`
+
+### Command Line
+```bash
+podman exec -it fello-mysql8 mysql -u root -p
 ```
 
 ## Troubleshooting
 
-### Check Status
-
-```bash
-./status-pods.sh
-```
-
 ### View Logs
-
 ```bash
 # Container logs
-podman logs fello-mysql8
-podman logs fello-nginx  
+podman logs fello-nginx
 podman logs fello-php-fpm
+podman logs fello-mysql8
 podman logs fello-phpmyadmin
 
-# Application logs
-tail -f volumes/logs/nginx/fc-inventory-api.error.log
-tail -f volumes/logs/mysql/error.log
-tail -f volumes/logs/php-fpm/error.log
-```
-
-### Rebuild Services
-
-```bash
-# Stop everything
-./stop-pods.sh
-
-# Start fresh (rebuilds images)
-./start-pods.sh
+# Application logs  
+tail -f volumes/logs/nginx/error.log
+tail -f /path/to/fello-ims/storage/logs/laravel.log
 ```
 
 ### Access Containers
-
 ```bash
-# Access PHP-FPM container
 podman exec -it fello-php-fpm bash
-
-# Access MySQL container  
-podman exec -it fello-mysql8 mysql -u root -p
-
-# Access Nginx container
 podman exec -it fello-nginx sh
 ```
 
-## Network Architecture
+### Common Issues
 
-- **Network**: `fello-network` (custom bridge network)
-- **Pod Communication**: Containers within pods use localhost
-- **Inter-pod Communication**: Via network name resolution
-- **External Access**: Through published ports
+**502 Bad Gateway**: Check PHP-FPM logs and restart services
+**Permission Denied**: Run permission fix commands above
+**Database Connection**: Verify `DB_HOST=fello-mysql8` in .env files
+**API Calls Failing**: Use `http://fello-nginx:8081/` for internal calls
 
-## Development Workflow
+### Complete Reset
+```bash
+./stop-pods.sh
+./start-pods.sh  # Rebuilds everything
+```
 
-1. **Start Development**:
+## Architecture
 
-   ```bash
-   ./simple-start.sh
-   ```
-
-2. **Work on Code**: Edit files in project directories
-
-3. **View Changes**: Refresh browser (PHP files reload automatically)
-
-4. **Stop Development**:
-
-   ```bash
-   ./simple-stop.sh
-   ```
-
-5. **Install New Dependencies**:
-
-   ```bash
-   podman exec -it fello-php-fpm composer install
-   ```
-
-## Migration from Docker
-
-This Podman setup replaces:
-
-- `fello-mysql/docker-compose.yml` → Database pod
-- Individual project Docker files → Web services pod  
-- Docker networks → Podman network
-- Docker volumes → Local volumes with `:Z` flags
-
-### Key Improvements
-
-- **SELinux Compatible**: No SELinux configuration needed
-- **Centralized Management**: Single location for all services
-- **Better Resource Control**: Pods provide process grouping
-- **Enhanced Security**: Rootless container support
-- **Unified Logging**: Centralized log directory
-
-## Support
-
-For issues with this Podman setup:
-
-1. Check logs using troubleshooting commands above
-2. Verify SELinux is not blocking operations  
-3. Ensure all project directories exist at expected paths
-4. Confirm Podman and network configuration
+- **Web Services Pod** (port 8080): Nginx + PHP-FPM + applications
+- **Database Pod** (port 9080): MySQL + phpMyAdmin
+- **Internal API Port**: 8081 for container-to-container communication
+- **SELinux Compatible**: All volumes use `:Z` flags
+- **Rootless**: Runs without requiring root privileges
 
 ---
 
