@@ -1,0 +1,4 @@
+[mysqld]
+max_allowed_packet=4096M
+group_concat_max_len=65536
+bind-address=0.0.0.0
