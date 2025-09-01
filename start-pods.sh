@@ -68,6 +68,13 @@ podman run -d \
     -e MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD \
     phpmyadmin
 
+## Run Redis Container in web pod
+echo "📦 Starting Redis in Web Pod..."
+podman run -d \
+    --name fello-redis \
+    --pod fello-web-pod \
+    redis:alpine
+
 # --add-host=mysql8:$(podman inspect fello-db-pod --format '{{.InfraContainer.State.Network.IPAddress}}') \
 ## PHP-FPM Container
 podman run -d \

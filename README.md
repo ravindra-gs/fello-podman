@@ -5,12 +5,14 @@ Complete containerized environment for Fello applications using Podman on Fedora
 ## Quick Setup
 
 ### 1. Start Services
+
 ```bash
 cd /path/to/Fello/podman-setup
 ./start-pods.sh
 ```
 
 ### 2. Configure Host Resolution
+
 ```bash
 echo "127.0.0.1 fc-inventory-api.localhost" | sudo tee -a /etc/hosts
 echo "127.0.0.1 fc-inventory.localhost" | sudo tee -a /etc/hosts
@@ -19,17 +21,18 @@ echo "127.0.0.1 fello-new.localhost" | sudo tee -a /etc/hosts
 ```
 
 ### 3. Install Dependencies
+
 ```bash
 ./composer-install.sh
 ```
 
 ## Application Access
 
-- **FC Inventory API**: http://fc-inventory-api.localhost:8080
-- **FC Inventory**: http://fc-inventory.localhost:8080  
-- **Fello IMS**: http://fello-ims.localhost:8080
-- **Fello New**: http://fello-new.localhost:8080
-- **phpMyAdmin**: http://localhost:9080
+- **FC Inventory API**: <http://fc-inventory-api.localhost:8080>
+- **FC Inventory**: <http://fc-inventory.localhost:8080>  
+- **Fello IMS**: <http://fello-ims.localhost:8080>
+- **Fello New**: <http://fello-new.localhost:8080>
+- **phpMyAdmin**: <http://localhost:9080>
 
 ## Environment Configuration
 
@@ -38,6 +41,7 @@ echo "127.0.0.1 fello-new.localhost" | sudo tee -a /etc/hosts
 Update each Laravel application's `.env` file:
 
 #### Database Configuration (All Apps)
+
 ```env
 DB_CONNECTION=mysql
 DB_HOST=fello-mysql8
@@ -48,19 +52,23 @@ DB_PASSWORD=ravindra
 ```
 
 #### Server-to-Server API Calls
+
 For applications calling fc-inventory-api internally:
 
 **fello-new/.env**:
+
 ```env
 IMS_URL=http://fello-nginx:8081/
 ```
 
 **fello-ims/.env**:
+
 ```env
 FC_API_URL=http://fello-nginx:8081/
 ```
 
 ### System .env File (podman-setup/.env)
+
 ```env
 MYSQL_ROOT_PASSWORD=ravindra
 MYSQL_PORT=3306
@@ -81,6 +89,7 @@ LOGS_PATH=volumes/logs
 ## Permission Fixes
 
 ### Laravel Storage Permissions
+
 If you encounter Laravel log/session permission errors:
 
 ```bash
@@ -96,6 +105,7 @@ chmod -R 777 /run/media/Data/GS/Projects/Fello/fc-inventory-api/storage
 ```
 
 ### Automated Fix
+
 ```bash
 ./fix-permissions.sh  # Stops containers, fixes permissions, restarts
 ```
@@ -103,6 +113,7 @@ chmod -R 777 /run/media/Data/GS/Projects/Fello/fc-inventory-api/storage
 ## Management Commands
 
 ### Daily Operations
+
 ```bash
 ./start-pods.sh     # Full start (rebuilds if needed)
 ./stop-pods.sh      # Stop all services
@@ -110,6 +121,7 @@ chmod -R 777 /run/media/Data/GS/Projects/Fello/fc-inventory-api/storage
 ```
 
 ### Quick Start/Stop (No Rebuild)
+
 ```bash
 ./simple-start.sh   # Quick start existing containers
 ./simple-stop.sh    # Quick stop (preserves containers)
@@ -118,11 +130,13 @@ chmod -R 777 /run/media/Data/GS/Projects/Fello/fc-inventory-api/storage
 ## Database Access
 
 ### phpMyAdmin
-- URL: http://localhost:9080
+
+- URL: <http://localhost:9080>
 - Username: `root`
 - Password: `ravindra`
 
 ### Command Line
+
 ```bash
 podman exec -it fello-mysql8 mysql -u root -p
 ```
@@ -130,6 +144,7 @@ podman exec -it fello-mysql8 mysql -u root -p
 ## Troubleshooting
 
 ### View Logs
+
 ```bash
 # Container logs
 podman logs fello-nginx
@@ -143,6 +158,7 @@ tail -f /path/to/fello-ims/storage/logs/laravel.log
 ```
 
 ### Access Containers
+
 ```bash
 podman exec -it fello-php-fpm bash
 podman exec -it fello-nginx sh
@@ -156,6 +172,7 @@ podman exec -it fello-nginx sh
 **API Calls Failing**: Use `http://fello-nginx:8081/` for internal calls
 
 ### Complete Reset
+
 ```bash
 ./stop-pods.sh
 ./start-pods.sh  # Rebuilds everything
@@ -172,3 +189,8 @@ podman exec -it fello-nginx sh
 ---
 
 **Generated with [Claude Code](https://claude.ai/code)**
+
+## ENV helpers
+
+- Use host `127.0.0.1` in `.env` file
+- Ensure redis client is set to `predis` not `phpredis`.
