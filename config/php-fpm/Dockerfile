@@ -28,9 +28,7 @@ RUN pecl install xdebug-3.3.1 && \
 # Copy PHP-FPM configuration
 COPY php-fpm.conf /usr/local/etc/php-fpm.conf
 
-# Create log directories
-# RUN mkdir -p /var/log/php-fpm && \
-#     chown -R www-data:www-data /var/log/php-fpm
+COPY xdebug.ini /usr/local/etc/php/conf.d/
 
 # Copy PHP configuration files
 RUN echo "max_execution_time=300" >> /usr/local/etc/php/conf.d/custom.ini && \
