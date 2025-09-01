@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Enable port 80
+sudo sysctl net.ipv4.ip_unprivileged_port_start=80
+
 # COMMON STEPS
 ## Load environment variables
 source .env
