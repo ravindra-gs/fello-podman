@@ -4,16 +4,16 @@ echo "🛑 Stopping Fello Podman Setup..."
 
 # Stop and remove Web Services Pod
 echo "🌐 Stopping Web Services Pod..."
-podman pod exists fello-web-pod && {
-    podman pod stop fello-web-pod
-    podman pod rm fello-web-pod
+podman pod exists fello_web && {
+    podman pod stop fello_web
+    podman pod rm fello_web
 }
 
 # Stop and remove Database Pod
 echo "🗄️  Stopping Database Pod..."
-podman pod exists fello-db-pod && {
-    podman pod stop fello-db-pod
-    podman pod rm fello-db-pod
+podman pod exists fello_db && {
+    podman pod stop fello_db
+    podman pod rm fello_db
 }
 
 echo "✅ All pods stopped successfully!"
