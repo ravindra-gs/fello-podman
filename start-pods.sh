@@ -4,7 +4,9 @@ fello_build_and_start_pods() {
     cd /run/media/Data/GS/Projects/Fello/podman-setup
 
     pre_stage_setup() {
-        sudo sysctl net.ipv4.ip_unprivileged_port_start=80
+        if [ "$(sysctl -n net.ipv4.ip_unprivileged_port_start)" != "80" ]; then
+            sudo sysctl net.ipv4.ip_unprivileged_port_start=80
+        fi
         source .env
 
         mkdir -p "$MYSQL_DATA_PATH"
