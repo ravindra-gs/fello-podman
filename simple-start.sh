@@ -13,8 +13,13 @@ fello_start_pods() {
 
     # Start Database Pod if it exists and is stopped
     if podman pod exists fello_db; then
-        echo "📂 Starting Database Pod..."
-        podman pod start fello_db
+        DB_STATUS=$(podman pod inspect fello_db --format '{{.State}}')
+        if [ "$DB_STATUS" = "Running" ]; then
+            echo "📂 Database Pod is already running."
+        else
+            echo "📂 Starting Database Pod..."
+            podman pod start fello_db
+        fi
     else
         echo "❌ Database pod doesn't exist. Run ./start-pods.sh first."
         exit 1
@@ -22,8 +27,13 @@ fello_start_pods() {
 
     # Start Web Services Pod if it exists and is stopped
     if podman pod exists fello_web; then
-        echo "🌐 Starting Web Services Pod..."
-        podman pod start fello_web
+        WEB_STATUS=$(podman pod inspect fello_web --format '{{.State}}')
+        if [ "$WEB_STATUS" = "Running" ]; then
+            echo "🌐 Web Services Pod is already running."
+        else
+            echo "🌐 Starting Web Services Pod..."
+            podman pod start fello_web
+        fi
     else
         echo "❌ Web services pod doesn't exist. Run ./start-pods.sh first."
         exit 1
