@@ -1,6 +1,6 @@
 # Fello Project - Podman Setup
 
-Complete containerized environment for Fello applications using Podman on Fedora with SELinux.
+Complete containerized environment for Fello applications using Podman with SELinux.
 
 ## Quick Setup
 
@@ -28,10 +28,10 @@ echo "127.0.0.1 fello-new.localhost" | sudo tee -a /etc/hosts
 
 ## Application Access
 
-- **FC Inventory API**: <http://fc-inventory-api.localhost:8080>
-- **FC Inventory**: <http://fc-inventory.localhost:8080>  
-- **Fello IMS**: <http://fello-ims.localhost:8080>
-- **Fello New**: <http://fello-new.localhost:8080>
+- **FC Inventory API**: <http://fc-inventory-api.localhost>
+- **FC Inventory**: <http://fc-inventory.localhost>  
+- **Fello IMS**: <http://fello-ims.localhost>
+- **Fello New**: <http://fello-new.localhost>
 - **phpMyAdmin**: <http://localhost:9080>
 
 ## Environment Configuration
@@ -44,7 +44,7 @@ Update each Laravel application's `.env` file:
 
 ```env
 DB_CONNECTION=mysql
-DB_HOST=fello-mysql8
+DB_HOST=fello_db
 DB_PORT=3306
 DB_DATABASE=your_database_name
 DB_USERNAME=root
@@ -58,32 +58,13 @@ For applications calling fc-inventory-api internally:
 **fello-new/.env**:
 
 ```env
-IMS_URL=http://fello-nginx:8081/
+IMS_URL=http://fello_wb:8081/
 ```
 
 **fello-ims/.env**:
 
 ```env
 FC_API_URL=http://fello-nginx:8081/
-```
-
-### System .env File (podman-setup/.env)
-
-```env
-MYSQL_ROOT_PASSWORD=ravindra
-MYSQL_PORT=3306
-PMA_PORT=9080
-FELLO_NETWORK=fello-network
-NGINX_PORT=8080
-
-# Project paths - adjust as needed
-FELLO_IMS_PATH=../fello-ims
-FELLO_NEW_PATH=../fello-new
-FC_INVENTORY_API_PATH=../fc-inventory-api
-FC_INVENTORY_PATH=../fc-inventory
-MYSQL_DATA_PATH=volumes/mysql
-MYSQL_FILES_PATH=volumes/mysql-files
-LOGS_PATH=volumes/logs
 ```
 
 ## Permission Fixes
@@ -102,12 +83,6 @@ sudo find /run/media/Data/GS/Projects/Fello/fc-inventory-api/storage -user root 
 chmod -R 777 /run/media/Data/GS/Projects/Fello/fello-ims/storage
 chmod -R 777 /run/media/Data/GS/Projects/Fello/fello-new/storage
 chmod -R 777 /run/media/Data/GS/Projects/Fello/fc-inventory-api/storage
-```
-
-### Automated Fix
-
-```bash
-./fix-permissions.sh  # Stops containers, fixes permissions, restarts
 ```
 
 ## Management Commands
@@ -138,7 +113,7 @@ chmod -R 777 /run/media/Data/GS/Projects/Fello/fc-inventory-api/storage
 ### Command Line
 
 ```bash
-podman exec -it fello-mysql8 mysql -u root -p
+podman exec -it fello_mysql8 mysql -u root -p
 ```
 
 ## Troubleshooting
@@ -187,8 +162,6 @@ podman exec -it fello-nginx sh
 - **Rootless**: Runs without requiring root privileges
 
 ---
-
-**Generated with [Claude Code](https://claude.ai/code)**
 
 ## ENV helpers
 

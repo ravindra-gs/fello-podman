@@ -1,9 +1,13 @@
 #!/bin/bash
 
-echo "🛑 Quick stopping pods..."
+fello_stop_pods() {
+    cd /run/media/Data/GS/Projects/Fello/podman-setup
 
-# Stop pods but don't remove them
-podman pod exists fello-web-pod && podman pod stop fello-web-pod
-podman pod exists fello-db-pod && podman pod stop fello-db-pod
+    echo "🛑 Quick stopping pods..."
 
-echo "✅ Pods stopped!"
+    # Stop pods but don't remove them
+    podman pod exists fello_web && podman pod stop fello_web
+    podman pod exists fello_db && podman pod stop fello_db
+
+    echo "✅ Pods stopped!"
+}

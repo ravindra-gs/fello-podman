@@ -1,27 +1,31 @@
 #!/bin/bash
 
-# Simple start script - starts pods without rebuilding
-source .env
+fello_start_pods() {
+    cd /run/media/Data/GS/Projects/Fello/podman-setup
 
-echo "🚀 Quick starting pods..."
+    # Simple start script - starts pods without rebuilding
+    source .env
 
-# Start Database Pod if it exists and is stopped
-if podman pod exists fello-db-pod; then
-    echo "📂 Starting Database Pod..."
-    podman pod start fello-db-pod
-else
-    echo "❌ Database pod doesn't exist. Run ./start-pods.sh first."
-    exit 1
-fi
+    echo "🚀 Quick starting pods..."
 
-# Start Web Services Pod if it exists and is stopped
-if podman pod exists fello-web-pod; then
-    echo "🌐 Starting Web Services Pod..."
-    podman pod start fello-web-pod
-else
-    echo "❌ Web services pod doesn't exist. Run ./start-pods.sh first."
-    exit 1
-fi
+    # Start Database Pod if it exists and is stopped
+    if podman pod exists fello_db; then
+        echo "📂 Starting Database Pod..."
+        podman pod start fello_db
+    else
+        echo "❌ Database pod doesn't exist. Run ./start-pods.sh first."
+        exit 1
+    fi
 
-echo "✅ Pods started!"
-./status-pods.sh
+    # Start Web Services Pod if it exists and is stopped
+    if podman pod exists fello_web; then
+        echo "🌐 Starting Web Services Pod..."
+        podman pod start fello_web
+    else
+        echo "❌ Web services pod doesn't exist. Run ./start-pods.sh first."
+        exit 1
+    fi
+
+    echo "✅ Pods started!"
+    ./status-pods.sh
+}
