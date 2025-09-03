@@ -80,6 +80,10 @@ fello_build_and_start_pods() {
             -v $PWD/$FELLO_NEW_PATH:/var/www/fello-new:Z \
             -v $PWD/$LOGS_PATH/php-fpm:/var/log/php-fpm:Z \
             fello-php-fpm:8.2
+
+        # Disable xdebug by default
+        podman exec fello_php_fpm mv /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini.bak
+        podman restart fello_php_fpm
     }
 
     build_nginx_container() {

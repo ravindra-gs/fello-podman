@@ -33,6 +33,10 @@ fello_start_pods() {
         else
             echo "🌐 Starting Web Services Pod..."
             podman pod start fello_web
+
+            # Disable xdebug by default
+            podman exec fello_php_fpm mv /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini.bak
+            podman restart fello_php_fpm
         fi
     else
         echo "❌ Web services pod doesn't exist. Run ./start-pods.sh first."
@@ -40,5 +44,4 @@ fello_start_pods() {
     fi
 
     echo "✅ Pods started!"
-    ./status-pods.sh
 }
