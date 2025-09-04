@@ -15,9 +15,12 @@ fello_build_and_start_pods() {
         mkdir -p "$LOGS_PATH/php-fpm"
 
         echo "🔧 Fixing Laravel storage permissions..."
+        chmod -R 777 $FC_INVENTORY_API_PATH/storage 2>/dev/null || true
+        chmod -R 777 $FELLO_EVENTBRITE_PATH/storage 2>/dev/null || true
         chmod -R 777 $FELLO_IMS_PATH/storage 2>/dev/null || true
         chmod -R 777 $FELLO_NEW_PATH/storage 2>/dev/null || true
-        chmod -R 777 $FC_INVENTORY_API_PATH/storage 2>/dev/null || true
+        chmod -R 777 $FELLO_SHOPIFY_CA_PATH/storage 2>/dev/null || true
+        chmod -R 777 $FELLO_SHOPIFY_PATH/storage 2>/dev/null || true
 
         podman network exists $FELLO_NETWORK || podman network create $FELLO_NETWORK
         podman build -t fello-php-fpm:8.2 config/php-fpm/
