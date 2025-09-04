@@ -76,8 +76,11 @@ fello_build_and_start_pods() {
             --name fello_php_fpm \
             -v $PWD/$FC_INVENTORY_API_PATH:/var/www/fc-inventory-api:Z \
             -v $PWD/$FC_INVENTORY_PATH:/var/www/fc-inventory:Z \
+            -v $PWD/$FELLO_EVENTBRITE_PATH:/var/www/fello-eventbrite:Z \
             -v $PWD/$FELLO_IMS_PATH:/var/www/fello-ims:Z \
             -v $PWD/$FELLO_NEW_PATH:/var/www/fello-new:Z \
+            -v $PWD/$FELLO_SHOPIFY_CA_PATH:/var/www/fello-shopify-ca:Z \
+            -v $PWD/$FELLO_SHOPIFY_PATH:/var/www/fello-shopify:Z \
             -v $PWD/$LOGS_PATH/php-fpm:/var/log/php-fpm:Z \
             fello-php-fpm:8.2
 
@@ -90,15 +93,21 @@ fello_build_and_start_pods() {
         podman run -d \
             --pod fello_web \
             --name fello_nginx \
-            -v $PWD/config/nginx/conf.d/fc-inventory-api.conf:/etc/nginx/conf.d/fc-inventory-api.conf:Z \
-            -v $PWD/config/nginx/conf.d/fc-inventory.conf:/etc/nginx/conf.d/fc-inventory.conf:Z \
-            -v $PWD/config/nginx/conf.d/fello-ims.conf:/etc/nginx/conf.d/fello-ims.conf:Z \
-            -v $PWD/config/nginx/conf.d/fello-new.conf:/etc/nginx/conf.d/fello-new.conf:Z \
             -v $PWD/$FC_INVENTORY_API_PATH:/var/www/fc-inventory-api:Z \
             -v $PWD/$FC_INVENTORY_PATH:/var/www/fc-inventory:Z \
+            -v $PWD/$FELLO_EVENTBRITE_PATH:/var/www/fello-eventbrite:Z \
             -v $PWD/$FELLO_IMS_PATH:/var/www/fello-ims:Z \
             -v $PWD/$FELLO_NEW_PATH:/var/www/fello-new:Z \
+            -v $PWD/$FELLO_SHOPIFY_CA_PATH:/var/www/fello-shopify-ca:Z \
+            -v $PWD/$FELLO_SHOPIFY_PATH:/var/www/fello-shopify:Z \
             -v $PWD/$LOGS_PATH/nginx:/var/log/nginx:Z \
+            -v $PWD/config/nginx/conf.d/fc-inventory-api.conf:/etc/nginx/conf.d/fc-inventory-api.conf:Z \
+            -v $PWD/config/nginx/conf.d/fc-inventory.conf:/etc/nginx/conf.d/fc-inventory.conf:Z \
+            -v $PWD/config/nginx/conf.d/fello-eventbrite.conf:/etc/nginx/conf.d/fello-eventbrite.conf:Z \
+            -v $PWD/config/nginx/conf.d/fello-ims.conf:/etc/nginx/conf.d/fello-ims.conf:Z \
+            -v $PWD/config/nginx/conf.d/fello-new.conf:/etc/nginx/conf.d/fello-new.conf:Z \
+            -v $PWD/config/nginx/conf.d/fello-shopify-ca.conf:/etc/nginx/conf.d/fello-shopify-ca.conf:Z \
+            -v $PWD/config/nginx/conf.d/fello-shopify.conf:/etc/nginx/conf.d/fello-shopify.conf:Z \
             nginx:alpine
     }
 
@@ -108,16 +117,22 @@ fello_build_and_start_pods() {
         echo "🔗 Access URLs:"
         echo "   FC Inventory API:  http://fc-inventory-api.localhost:$NGINX_PORT"
         echo "   FC Inventory:      http://fc-inventory.localhost:$NGINX_PORT"
+        echo "   Fello Eventbrite:  http://fello-eventbrite.localhost:$NGINX_PORT"
         echo "   Fello IMS:         http://fello-ims.localhost:$NGINX_PORT"
         echo "   Fello New:         http://fello-new.localhost:$NGINX_PORT"
+        echo "   Fello Shopify CA:  http://fello-shopify-ca.localhost:$NGINX_PORT"
+        echo "   Fello Shopify:     http://fello-shopify.localhost:$NGINX_PORT"
         echo "   PHPMyAdmin:        http://localhost:$PMA_PORT"
         echo ""
         echo "📝 Next steps:"
         echo "   1. Add entries to /etc/hosts:"
         echo "      127.0.0.1 fc-inventory-api.localhost"
         echo "      127.0.0.1 fc-inventory.localhost"
+        echo "      127.0.0.1 fello-evenbrite.localhost"
         echo "      127.0.0.1 fello-ims.localhost"
         echo "      127.0.0.1 fello-new.localhost"
+        echo "      127.0.0.1 fello-shopify-ca.localhost"
+        echo "      127.0.0.1 fello-shopify.localhost"
         echo "   2. Run ./composer-install.sh to install PHP dependencies"
     }
 
