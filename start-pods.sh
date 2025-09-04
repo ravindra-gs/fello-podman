@@ -128,7 +128,7 @@ fello_build_and_start_pods() {
         echo "   1. Add entries to /etc/hosts:"
         echo "      127.0.0.1 fc-inventory-api.localhost"
         echo "      127.0.0.1 fc-inventory.localhost"
-        echo "      127.0.0.1 fello-evenbrite.localhost"
+        echo "      127.0.0.1 fello-eventbrite.localhost"
         echo "      127.0.0.1 fello-ims.localhost"
         echo "      127.0.0.1 fello-new.localhost"
         echo "      127.0.0.1 fello-shopify-ca.localhost"
