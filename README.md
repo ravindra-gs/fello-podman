@@ -68,32 +68,11 @@ Ensure these files are sources in the terminal session:
 
 Update each Laravel application's `.env` file:
 
-- `APP_URL` in all websites has to be set correctly like `APP_URL=http://fello-shopify.localhost`
+- `APP_URL` in all websites has to be set correctly like `APP_URL=http://shopify.fello.localhost`
 - Ensure redis client is set to `predis` not `phpredis`.
 - DB Host will be like `DB_HOST=fello_db`
 - Redis host will be like `REDIS_HOST=fello_db`
-- IMS URL will be like `IMS_URL=http://fello_nginx:8081/`
-
-#### Database Configuration (All Apps)
-
-```env
-DB_CONNECTION=mysql
-DB_HOST=fello_db
-DB_PORT=3306
-DB_DATABASE=<database_name>
-DB_USERNAME=root
-DB_PASSWORD=<password>
-```
-
-#### Server-to-Server API Calls
-
-For applications calling `api.fello.localhost` internally:
-
-**fello-new/.env**:
-
-```env
-IMS_URL=http://fello_web:8081/
-```
+- IMS URL will be like `IMS_URL=http://fello_nginx:8081/` for server to server call
 
 ## Permission Fixes
 

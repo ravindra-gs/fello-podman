@@ -51,6 +51,16 @@ setup_fello_project() {
         else
             echo "✅ $path exists."
         fi
+
+        # Run composer install in the correct container
+        folder_name=$(basename "$path")
+        if [ "$var" == "IMS_FELLO_COM_PATH" ]; then
+            container="fello_php_fpm74"
+        else
+            container="fello_php_fpm82"
+        fi
+        echo "🚀 Running composer install in $folder_name using $container..."
+        podman exec $container bash -c "cd /var/www/$folder_name && composer install"
     done
 }
 
