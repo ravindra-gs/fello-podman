@@ -12,7 +12,8 @@ fello_build_and_start_pods() {
         mkdir -p "$MYSQL_DATA_PATH"
         mkdir -p "$LOGS_PATH/mysql"
         mkdir -p "$LOGS_PATH/nginx"
-        mkdir -p "$LOGS_PATH/php-fpm"
+        mkdir -p "$LOGS_PATH/php-fpm82"
+        mkdir -p "$LOGS_PATH/php-fpm74"
 
         echo "🔧 Fixing Laravel storage permissions..."
         chmod -R 777 $API_FELLO_COM_PATH/storage 2>/dev/null || true
@@ -33,7 +34,8 @@ fello_build_and_start_pods() {
         chmod -R 777 $TASSELCA_FELLO_COM_PATH/storage 2>/dev/null || true
 
         podman network exists $FELLO_NETWORK || podman network create $FELLO_NETWORK
-        podman build -t fello-php-fpm:8.2 config/php-fpm/
+        podman build -t fello-php-fpm:8.2 config/php-fpm8.2
+        podman build -t fello-php-fpm:7.4 config/php-fpm7.4
     }
 
     create_pods() {
@@ -80,18 +82,18 @@ fello_build_and_start_pods() {
     }
 
     build_web_pod() {
-        build_php_fpm_container
+        build_php_fpm82_container
+        build_php_fpm74_container
         build_nginx_container
     }
 
-    build_php_fpm_container() {
-        echo "🚀 Starting PHP-FPM container..."
+    build_php_fpm82_container() {
+        echo "🚀 Starting PHP-FPM 8.2 container..."
 
         podman run -d \
             --pod fello_web \
-            --name fello_php_fpm \
+            --name fello_php_fpm82 \
             -v $PWD/$API_FELLO_COM_PATH:/var/www/api.fello.com:Z \
-            -v $PWD/$IMS_FELLO_COM_PATH:/var/www/ims.fello.com:Z \
             -v $PWD/$V4_FELLO_COM_PATH:/var/www/v4.fello.com:Z \
             -v $PWD/$ARAMARK_FELLO_COM_PATH:/var/www/aramark.fello.com:Z \
             -v $PWD/$EVENTBRITE_FELLO_COM_PATH:/var/www/eventbrite.fello.com:Z \
@@ -105,8 +107,19 @@ fello_build_and_start_pods() {
             -v $PWD/$SQURECA_FELLO_COM_PATH:/var/www/squareca.fello.com:Z \
             -v $PWD/$TASSEL_FELLO_COM_PATH:/var/www/tassel.fello.com:Z \
             -v $PWD/$TASSELCA_FELLO_COM_PATH:/var/www/tasselca.fello.com:Z \
-            -v $PWD/$LOGS_PATH/php-fpm:/var/log/php-fpm:Z \
+            -v $PWD/$LOGS_PATH/php-fpm82:/var/log/php-fpm:Z \
             fello-php-fpm:8.2
+    }
+
+    build_php_fpm74_container() {
+        echo "🚀 Starting PHP-FPM 7.4 container..."
+
+        podman run -d \
+            --pod fello_web \
+            --name fello_php_fpm74 \
+            -v $PWD/$IMS_FELLO_COM_PATH:/var/www/ims.fello.com:Z \
+            -v $PWD/$LOGS_PATH/php-fpm74:/var/log/php-fpm:Z \
+            fello-php-fpm:7.4
     }
 
     build_nginx_container() {

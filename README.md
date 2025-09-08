@@ -140,7 +140,7 @@ tail -f /path/to/fello-ims/storage/logs/laravel.log
 ### Access Containers
 
 ```bash
-podman exec -it fello_php_fpm bash
+podman exec -it fello_php_fpm82 bash
 podman exec -it fello_nginx sh
 ```
 
