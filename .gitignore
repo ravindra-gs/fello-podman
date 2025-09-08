@@ -1,3 +1,5 @@
+config/phpmyadmin/config.user.inc.php
 volumes/
 files/
 .env
+.claude

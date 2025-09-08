@@ -15,12 +15,22 @@ fello_build_and_start_pods() {
         mkdir -p "$LOGS_PATH/php-fpm"
 
         echo "🔧 Fixing Laravel storage permissions..."
-        chmod -R 777 $FC_INVENTORY_API_PATH/storage 2>/dev/null || true
-        chmod -R 777 $FELLO_EVENTBRITE_PATH/storage 2>/dev/null || true
-        chmod -R 777 $FELLO_IMS_PATH/storage 2>/dev/null || true
-        chmod -R 777 $FELLO_NEW_PATH/storage 2>/dev/null || true
-        chmod -R 777 $FELLO_SHOPIFY_CA_PATH/storage 2>/dev/null || true
-        chmod -R 777 $FELLO_SHOPIFY_PATH/storage 2>/dev/null || true
+        chmod -R 777 $API_FELLO_COM_PATH/storage 2>/dev/null || true
+        chmod -R 777 $IMS_FELLO_COM_PATH/storage 2>/dev/null || true
+        chmod -R 777 $V4_FELLO_COM_PATH/storage 2>/dev/null || true
+
+        chmod -R 777 $ARAMARK_FELLO_COM_PATH/storage 2>/dev/null || true
+        chmod -R 777 $EVENTBRITE_FELLO_COM_PATH/storage 2>/dev/null || true
+        chmod -R 777 $FELLO_COM_PATH/storage 2>/dev/null || true
+        chmod -R 777 $GIVESMART_FELLO_COM_PATH/storage 2>/dev/null || true
+        chmod -R 777 $LEVY_FELLO_COM_PATH/storage 2>/dev/null || true
+        chmod -R 777 $MOBILECAUSE_FELLO_COM_PATH/storage 2>/dev/null || true
+        chmod -R 777 $SHOPIFY_FELLO_COM_PATH/storage 2>/dev/null || true
+        chmod -R 777 $SHOPIFYCA_FELLO_COM_PATH/storage 2>/dev/null || true
+        chmod -R 777 $SQURE_FELLO_COM_PATH/storage 2>/dev/null || true
+        chmod -R 777 $SQURECA_FELLO_COM_PATH/storage 2>/dev/null || true
+        chmod -R 777 $TASSEL_FELLO_COM_PATH/storage 2>/dev/null || true
+        chmod -R 777 $TASSELCA_FELLO_COM_PATH/storage 2>/dev/null || true
 
         podman network exists $FELLO_NETWORK || podman network create $FELLO_NETWORK
         podman build -t fello-php-fpm:8.2 config/php-fpm/
@@ -49,9 +59,9 @@ fello_build_and_start_pods() {
             --name fello_mysql8 \
             -e MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD \
             -v $PWD/$MYSQL_DATA_PATH:/var/lib/mysql:Z \
-            -v $PWD/$MYSQL_FILES_PATH:/files:Z \
+            -v $PWD/$MYSQL_FILES_PATH:/files:ro,Z \
             -v $PWD/$LOGS_PATH/mysql:/var/log/mysql:Z \
-            -v $PWD/config/mysql/conf_override.cnf:/etc/mysql/conf.d/conf_override.cnf:Z \
+            -v $PWD/config/mysql/conf_override.cnf:/etc/mysql/conf.d/conf_override.cnf:ro,Z \
             mysql:8.0.30
     }
 
@@ -61,6 +71,7 @@ fello_build_and_start_pods() {
             --name fello_phpmyadmin \
             -e PMA_HOST=fello_mysql8 \
             -e MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD \
+            -v $PWD/config/phpmyadmin/config.user.inc.php:/etc/phpmyadmin/config.user.inc.php:ro,Z \
             phpmyadmin
     }
 
@@ -74,72 +85,103 @@ fello_build_and_start_pods() {
     }
 
     build_php_fpm_container() {
+        echo "🚀 Starting PHP-FPM container..."
+
         podman run -d \
             --pod fello_web \
             --name fello_php_fpm \
-            -v $PWD/$FC_INVENTORY_API_PATH:/var/www/fc-inventory-api:Z \
-            -v $PWD/$FC_INVENTORY_PATH:/var/www/fc-inventory:Z \
-            -v $PWD/$FELLO_EVENTBRITE_PATH:/var/www/fello-eventbrite:Z \
-            -v $PWD/$FELLO_IMS_PATH:/var/www/fello-ims:Z \
-            -v $PWD/$FELLO_NEW_PATH:/var/www/fello-new:Z \
-            -v $PWD/$FELLO_SHOPIFY_CA_PATH:/var/www/fello-shopify-ca:Z \
-            -v $PWD/$FELLO_SHOPIFY_PATH:/var/www/fello-shopify:Z \
+            -v $PWD/$API_FELLO_COM_PATH:/var/www/api.fello.com:Z \
+            -v $PWD/$IMS_FELLO_COM_PATH:/var/www/ims.fello.com:Z \
+            -v $PWD/$V4_FELLO_COM_PATH:/var/www/v4.fello.com:Z \
+            -v $PWD/$ARAMARK_FELLO_COM_PATH:/var/www/aramark.fello.com:Z \
+            -v $PWD/$EVENTBRITE_FELLO_COM_PATH:/var/www/eventbrite.fello.com:Z \
+            -v $PWD/$FELLO_COM_PATH:/var/www/fello.com:Z \
+            -v $PWD/$GIVESMART_FELLO_COM_PATH:/var/www/givesmart.fello.com:Z \
+            -v $PWD/$LEVY_FELLO_COM_PATH:/var/www/levy.fello.com:Z \
+            -v $PWD/$MOBILECAUSE_FELLO_COM_PATH:/var/www/mobilecause.fello.com:Z \
+            -v $PWD/$SHOPIFY_FELLO_COM_PATH:/var/www/shopify.fello.com:Z \
+            -v $PWD/$SHOPIFYCA_FELLO_COM_PATH:/var/www/shopifyca.fello.com:Z \
+            -v $PWD/$SQURE_FELLO_COM_PATH:/var/www/square.fello.com:Z \
+            -v $PWD/$SQURECA_FELLO_COM_PATH:/var/www/squareca.fello.com:Z \
+            -v $PWD/$TASSEL_FELLO_COM_PATH:/var/www/tassel.fello.com:Z \
+            -v $PWD/$TASSELCA_FELLO_COM_PATH:/var/www/tasselca.fello.com:Z \
             -v $PWD/$LOGS_PATH/php-fpm:/var/log/php-fpm:Z \
             fello-php-fpm:8.2
-
-        # Disable xdebug by default
-        podman exec fello_php_fpm mv /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini.bak
-        podman restart fello_php_fpm
     }
 
     build_nginx_container() {
+        echo "🚀 Starting Nginx container..."
         podman run -d \
             --pod fello_web \
             --name fello_nginx \
-            -v $PWD/$FC_INVENTORY_API_PATH:/var/www/fc-inventory-api:Z \
-            -v $PWD/$FC_INVENTORY_PATH:/var/www/fc-inventory:Z \
-            -v $PWD/$FELLO_EVENTBRITE_PATH:/var/www/fello-eventbrite:Z \
-            -v $PWD/$FELLO_IMS_PATH:/var/www/fello-ims:Z \
-            -v $PWD/$FELLO_NEW_PATH:/var/www/fello-new:Z \
-            -v $PWD/$FELLO_SHOPIFY_CA_PATH:/var/www/fello-shopify-ca:Z \
-            -v $PWD/$FELLO_SHOPIFY_PATH:/var/www/fello-shopify:Z \
             -v $PWD/$LOGS_PATH/nginx:/var/log/nginx:Z \
-            -v $PWD/config/nginx/conf.d/fc-inventory-api.conf:/etc/nginx/conf.d/fc-inventory-api.conf:Z \
-            -v $PWD/config/nginx/conf.d/fc-inventory.conf:/etc/nginx/conf.d/fc-inventory.conf:Z \
-            -v $PWD/config/nginx/conf.d/fello-eventbrite.conf:/etc/nginx/conf.d/fello-eventbrite.conf:Z \
-            -v $PWD/config/nginx/conf.d/fello-ims.conf:/etc/nginx/conf.d/fello-ims.conf:Z \
-            -v $PWD/config/nginx/conf.d/fello-new.conf:/etc/nginx/conf.d/fello-new.conf:Z \
-            -v $PWD/config/nginx/conf.d/fello-shopify-ca.conf:/etc/nginx/conf.d/fello-shopify-ca.conf:Z \
-            -v $PWD/config/nginx/conf.d/fello-shopify.conf:/etc/nginx/conf.d/fello-shopify.conf:Z \
+            -v $PWD/$API_FELLO_COM_PATH:/var/www/api.fello.com:ro,Z \
+            -v $PWD/$IMS_FELLO_COM_PATH:/var/www/ims.fello.com:ro,Z \
+            -v $PWD/$V4_FELLO_COM_PATH:/var/www/v4.fello.com:ro,Z \
+            -v $PWD/$ARAMARK_FELLO_COM_PATH:/var/www/aramark.fello.com:ro,Z \
+            -v $PWD/$EVENTBRITE_FELLO_COM_PATH:/var/www/eventbrite.fello.com:ro,Z \
+            -v $PWD/$FELLO_COM_PATH:/var/www/fello.com:ro,Z \
+            -v $PWD/$GIVESMART_FELLO_COM_PATH:/var/www/givesmart.fello.com:ro,Z \
+            -v $PWD/$LEVY_FELLO_COM_PATH:/var/www/levy.fello.com:ro,Z \
+            -v $PWD/$MOBILECAUSE_FELLO_COM_PATH:/var/www/mobilecause.fello.com:ro,Z \
+            -v $PWD/$SHOPIFY_FELLO_COM_PATH:/var/www/shopify.fello.com:ro,Z \
+            -v $PWD/$SHOPIFYCA_FELLO_COM_PATH:/var/www/shopifyca.fello.com:ro,Z \
+            -v $PWD/$SQURE_FELLO_COM_PATH:/var/www/square.fello.com:ro,Z \
+            -v $PWD/$SQURECA_FELLO_COM_PATH:/var/www/squareca.fello.com:ro,Z \
+            -v $PWD/$TASSEL_FELLO_COM_PATH:/var/www/tassel.fello.com:ro,Z \
+            -v $PWD/$TASSELCA_FELLO_COM_PATH:/var/www/tasselca.fello.com:ro,Z \
+            -v $PWD/config/nginx/conf.d/api.fello.com.conf:/etc/nginx/conf.d/api.fello.com.conf:ro,Z \
+            -v $PWD/config/nginx/conf.d/ims.fello.com.conf:/etc/nginx/conf.d/ims.fello.com.conf:ro,Z \
+            -v $PWD/config/nginx/conf.d/v4.fello.com.conf:/etc/nginx/conf.d/v4.fello.com.conf:ro,Z \
+            -v $PWD/config/nginx/conf.d/aramark.fello.com.conf:/etc/nginx/conf.d/aramark.fello.com.conf:ro,Z \
+            -v $PWD/config/nginx/conf.d/eventbrite.fello.com.conf:/etc/nginx/conf.d/eventbrite.fello.com.conf:ro,Z \
+            -v $PWD/config/nginx/conf.d/fello.com.conf:/etc/nginx/conf.d/fello.com.conf:ro,Z \
+            -v $PWD/config/nginx/conf.d/givesmart.fello.com.conf:/etc/nginx/conf.d/givesmart.fello.com.conf:ro,Z \
+            -v $PWD/config/nginx/conf.d/levy.fello.com.conf:/etc/nginx/conf.d/levy.fello.com.conf:ro,Z \
+            -v $PWD/config/nginx/conf.d/mobilecause.fello.com.conf:/etc/nginx/conf.d/mobilecause.fello.com.conf:ro,Z \
+            -v $PWD/config/nginx/conf.d/shopify.fello.com.conf:/etc/nginx/conf.d/shopify.fello.com.conf:ro,Z \
+            -v $PWD/config/nginx/conf.d/shopifyca.fello.com.conf:/etc/nginx/conf.d/shopifyca.fello.com.conf:ro,Z \
+            -v $PWD/config/nginx/conf.d/square.fello.com.conf:/etc/nginx/conf.d/square.fello.com.conf:ro,Z \
+            -v $PWD/config/nginx/conf.d/squareca.fello.com.conf:/etc/nginx/conf.d/squareca.fello.com.conf:ro,Z \
+            -v $PWD/config/nginx/conf.d/tassel.fello.com.conf:/etc/nginx/conf.d/tassel.fello.com.conf:ro,Z \
+            -v $PWD/config/nginx/conf.d/tasselca.fello.com.conf:/etc/nginx/conf.d/tasselca.fello.com.conf:ro,Z \
             nginx:alpine
+    }
+
+    post_stage_setup() {
+        if ! declare -f fello_enable_xdebug > /dev/null; then
+            source "./helper.sh"
+        fi
+        fello_disable_xdebug
     }
 
     print_success_message() {
         echo "✅ All pods started successfully!"
         echo ""
         echo "🔗 Access URLs:"
-        echo "   FC Inventory API:  http://fc-inventory-api.localhost:$NGINX_PORT"
-        echo "   FC Inventory:      http://fc-inventory.localhost:$NGINX_PORT"
-        echo "   Fello Eventbrite:  http://fello-eventbrite.localhost:$NGINX_PORT"
-        echo "   Fello IMS:         http://fello-ims.localhost:$NGINX_PORT"
-        echo "   Fello New:         http://fello-new.localhost:$NGINX_PORT"
-        echo "   Fello Shopify CA:  http://fello-shopify-ca.localhost:$NGINX_PORT"
-        echo "   Fello Shopify:     http://fello-shopify.localhost:$NGINX_PORT"
         echo "   PHPMyAdmin:        http://localhost:$PMA_PORT"
         echo ""
-        echo "📝 Next steps:"
-        echo "   1. Add entries to /etc/hosts:"
-        echo "      127.0.0.1 fc-inventory-api.localhost"
-        echo "      127.0.0.1 fc-inventory.localhost"
-        echo "      127.0.0.1 fello-eventbrite.localhost"
-        echo "      127.0.0.1 fello-ims.localhost"
-        echo "      127.0.0.1 fello-new.localhost"
-        echo "      127.0.0.1 fello-shopify-ca.localhost"
-        echo "      127.0.0.1 fello-shopify.localhost"
-        echo "   2. Run ./composer-install.sh to install PHP dependencies"
+        echo "   API:               http://api.fello.localhost:$NGINX_PORT"
+        echo "   IMSv2:             http://ims.fello.localhost:$NGINX_PORT"
+        echo "   IMSv4:             http://v4.fello.localhost:$NGINX_PORT"
+        echo ""
+        echo "   Aramark:           http://aramark.fello.localhost:$NGINX_PORT"
+        echo "   Eventbrite:        http://eventbrite.fello.localhost:$NGINX_PORT"
+        echo "   Fello:             http://fello.localhost:$NGINX_PORT"
+        echo "   GiveSmart:         http://givesmart.fello.localhost:$NGINX_PORT"
+        echo "   Levy:              http://levy.fello.localhost:$NGINX_PORT"
+        echo "   MobileCause:       http://mobilecause.fello.localhost:$NGINX_PORT"
+        echo "   Shopify:           http://shopify.fello.localhost:$NGINX_PORT"
+        echo "   Shopify CA:        http://shopifyca.fello.localhost:$NGINX_PORT"
+        echo "   Square:            http://square.fello.localhost:$NGINX_PORT"
+        echo "   Square CA:         http://squareca.fello.localhost:$NGINX_PORT"
+        echo "   Tassel:            http://tassel.fello.localhost:$NGINX_PORT"
+        echo "   Tassel CA:         http://tasselca.fello.localhost:$NGINX_PORT"
+        echo ""
     }
 
     pre_stage_setup
     create_pods
-    print_success_message
+    post_stage_setup
+    print_success_message    
 }

@@ -4,35 +4,63 @@ Complete containerized environment for Fello applications using Podman with SELi
 
 ## Quick Setup
 
-### 1. Start Services
+Store this repository parallel to the Fello project directory. (Not required but recommended)
 
-```bash
-cd /path/to/Fello/podman-setup
-./start-pods.sh
+## Recommended Structure
+
+```txt
+├── fc-community-brands
+├── fc-inventory
+├── fc-inventory-api
+├── fc-square
+├── fello-eventbrite
+├── fello-ims
+├── fello-marching-order
+├── fello-new
+├── fello-shopify
+├── fello-shopify-ca
+├── fello-square-ca
+└── podman-setup        <------- The podman-setup lives here, parallel to Fello projects
 ```
 
-### 2. Configure Host Resolution
+### Files
 
-```bash
-echo "127.0.0.1 fc-inventory-api.localhost" | sudo tee -a /etc/hosts
-echo "127.0.0.1 fc-inventory.localhost" | sudo tee -a /etc/hosts
-echo "127.0.0.1 fello-ims.localhost" | sudo tee -a /etc/hosts
-echo "127.0.0.1 fello-new.localhost" | sudo tee -a /etc/hosts
-```
+- Required: Copy `.env.example` to `.env` and adjust if needed.
+- Required: Copy `config/phpmyadmin/config.user.inc.example.php` to `config/phpmyadmin/config.user.inc.php` and adjust if needed.
 
-### 3. Install Dependencies
+## Basic operations
 
-```bash
-./composer-install.sh
-```
+### Start Services
 
-## Application Access
+Ensure these files are sources in the terminal session:
 
-- **FC Inventory API**: <http://fc-inventory-api.localhost>
-- **FC Inventory**: <http://fc-inventory.localhost>  
-- **Fello IMS**: <http://fello-ims.localhost>
-- **Fello New**: <http://fello-new.localhost>
-- **phpMyAdmin**: <http://localhost:9080>
+- `fello_build_and_start_pods` - Full build and start
+- `fello_stop_and_remove_pods` - Stop and remove pods
+- `fello_start_pods`           - Start already stopped pods
+- `fello_stop_pods`            - Stop pods without removing
+- `fello_enable_xdebug`        - Enable xdebug in php-fpm (Not recommended unless debugging, this makes API 5x slow by default)
+- `fello_disable_xdebug`       - Disable xdebug in php-fpm (Recommended for normal use)
+
+### Application Access
+
+| Service    | URL                                 |
+|------------|-------------------------------------|
+| PHPMyAdmin | <http://localhost:9080>             |
+| API        | <http://api.fello.localhost>        |
+| IMSv2      | <http://ims.fello.localhost>        |
+| IMSv4      | <http://v4.fello.localhost>         |
+| Fello      | <http://fello.localhost>            |
+| Square     | <http://square.fello.localhost>     |
+| Givesmart  | <http://givesmart.fello.localhost>  |
+| Mobilecause| <http://mobilecause.fello.localhost>|
+| Shopify    | <http://shopify.fello.localhost>    |
+| Eventbrite | <http://eventbrite.fello.localhost> |
+| Tassel     | <http://tassel.fello.localhost>     |
+| Aramark    | <http://aramark.fello.localhost>    |
+| Levy       | <http://levy.fello.localhost>       |
+| ShopifyCA  | <http://shopifyca.fello.localhost>  |
+| TasselCA   | <http://tasselca.fello.localhost>   |
+| SquareCA   | <http://squareca.fello.localhost>   |
 
 ## Environment Configuration
 
@@ -40,31 +68,31 @@ echo "127.0.0.1 fello-new.localhost" | sudo tee -a /etc/hosts
 
 Update each Laravel application's `.env` file:
 
+- `APP_URL` in all websites has to be set correctly like `APP_URL=http://fello-shopify.localhost`
+- Ensure redis client is set to `predis` not `phpredis`.
+- DB Host will be like `DB_HOST=fello_db`
+- Redis host will be like `REDIS_HOST=fello_db`
+- IMS URL will be like `IMS_URL=http://fello_nginx:8081/`
+
 #### Database Configuration (All Apps)
 
 ```env
 DB_CONNECTION=mysql
 DB_HOST=fello_db
 DB_PORT=3306
-DB_DATABASE=your_database_name
+DB_DATABASE=<database_name>
 DB_USERNAME=root
-DB_PASSWORD=ravindra
+DB_PASSWORD=<password>
 ```
 
 #### Server-to-Server API Calls
 
-For applications calling fc-inventory-api internally:
+For applications calling `api.fello.localhost` internally:
 
 **fello-new/.env**:
 
 ```env
-IMS_URL=http://fello_wb:8081/
-```
-
-**fello-ims/.env**:
-
-```env
-FC_API_URL=http://fello-nginx:8081/
+IMS_URL=http://fello_web:8081/
 ```
 
 ## Permission Fixes
@@ -75,31 +103,14 @@ If you encounter Laravel log/session permission errors:
 
 ```bash
 # Fix ownership (run as root)
-sudo find /run/media/Data/GS/Projects/Fello/fello-ims/storage -user root -exec chown ravindra-gs:ravindra-gs {} \;
-sudo find /run/media/Data/GS/Projects/Fello/fello-new/storage -user root -exec chown ravindra-gs:ravindra-gs {} \;
-sudo find /run/media/Data/GS/Projects/Fello/fc-inventory-api/storage -user root -exec chown ravindra-gs:ravindra-gs {} \;
+sudo find ../fello-ims/storage -user root -exec chown $(whoami):$(whoami) {} \;
+sudo find ../fello-new/storage -user root -exec chown $(whoami):$(whoami) {} \;
+sudo find ../fc-inventory-api/storage -user root -exec chown $(whoami):$(whoami) {} \;
 
 # Set permissions
-chmod -R 777 /run/media/Data/GS/Projects/Fello/fello-ims/storage
-chmod -R 777 /run/media/Data/GS/Projects/Fello/fello-new/storage
-chmod -R 777 /run/media/Data/GS/Projects/Fello/fc-inventory-api/storage
-```
-
-## Management Commands
-
-### Daily Operations
-
-```bash
-./start-pods.sh     # Full start (rebuilds if needed)
-./stop-pods.sh      # Stop all services
-./status-pods.sh    # Check status
-```
-
-### Quick Start/Stop (No Rebuild)
-
-```bash
-./simple-start.sh   # Quick start existing containers
-./simple-stop.sh    # Quick stop (preserves containers)
+chmod -R 777 ../fello-ims/storage
+chmod -R 777 ../fello-new/storage
+chmod -R 777 ../fc-inventory-api/storage
 ```
 
 ## Database Access
@@ -108,13 +119,7 @@ chmod -R 777 /run/media/Data/GS/Projects/Fello/fc-inventory-api/storage
 
 - URL: <http://localhost:9080>
 - Username: `root`
-- Password: `ravindra`
-
-### Command Line
-
-```bash
-podman exec -it fello_mysql8 mysql -u root -p
-```
+- Password: `<password>`
 
 ## Troubleshooting
 
@@ -127,7 +132,7 @@ podman logs fello-php-fpm
 podman logs fello-mysql8
 podman logs fello-phpmyadmin
 
-# Application logs  
+# Application logs
 tail -f volumes/logs/nginx/error.log
 tail -f /path/to/fello-ims/storage/logs/laravel.log
 ```
@@ -135,8 +140,8 @@ tail -f /path/to/fello-ims/storage/logs/laravel.log
 ### Access Containers
 
 ```bash
-podman exec -it fello-php-fpm bash
-podman exec -it fello-nginx sh
+podman exec -it fello_php_fpm bash
+podman exec -it fello_nginx sh
 ```
 
 ### Common Issues
@@ -146,13 +151,6 @@ podman exec -it fello-nginx sh
 **Database Connection**: Verify `DB_HOST=fello-mysql8` in .env files
 **API Calls Failing**: Use `http://fello-nginx:8081/` for internal calls
 
-### Complete Reset
-
-```bash
-./stop-pods.sh
-./start-pods.sh  # Rebuilds everything
-```
-
 ## Architecture
 
 - **Web Services Pod** (port 8080): Nginx + PHP-FPM + applications
@@ -160,10 +158,3 @@ podman exec -it fello-nginx sh
 - **Internal API Port**: 8081 for container-to-container communication
 - **SELinux Compatible**: All volumes use `:Z` flags
 - **Rootless**: Runs without requiring root privileges
-
----
-
-## ENV helpers
-
-- Use host `127.0.0.1` in `.env` file
-- Ensure redis client is set to `predis` not `phpredis`.
